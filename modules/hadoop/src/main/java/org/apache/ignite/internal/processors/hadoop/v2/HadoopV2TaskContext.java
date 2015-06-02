@@ -462,9 +462,11 @@ public class HadoopV2TaskContext extends HadoopTaskContext {
         assert user != null;
 
         String ugiUser;
+
         try {
             UserGroupInformation currUser = UserGroupInformation.getCurrentUser();
 
+            // TODO: Ensure that UserGroupInformation.getCurrentUser() cannot return null, or add null-check.
             ugiUser = currUser.getShortUserName();
         }
         catch (IOException ioe) {

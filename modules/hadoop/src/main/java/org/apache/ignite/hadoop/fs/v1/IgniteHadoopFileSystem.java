@@ -355,6 +355,7 @@ public class IgniteHadoopFileSystem extends FileSystem {
     @Override public void close() throws IOException {
         if (closeGuard.compareAndSet(false, true)) {
             if (cacheEnabled) {
+                // TODO: get must take in count user name.
                 FileSystem cached = get(getUri(), getConf());
 
                 if (cached == this)

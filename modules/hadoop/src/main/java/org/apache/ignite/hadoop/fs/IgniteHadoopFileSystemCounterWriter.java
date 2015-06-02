@@ -73,19 +73,19 @@ public class IgniteHadoopFileSystemCounterWriter implements HadoopCounterWriter 
         try {
             hadoopCfg.set(MRJobConfig.USER_NAME, user);
 
-            try (FileSystem fs = HadoopV2JobResourceManager.fileSystemForMrUser(jobStatPath.toUri(), hadoopCfg)) {
-                fs.mkdirs(jobStatPath);
+            // TODO: Check if FileSystem can be closed here safely.
+            FileSystem fs = HadoopV2JobResourceManager.fileSystemForMrUser(jobStatPath.toUri(), hadoopCfg);
 
-                try (PrintStream out = new PrintStream(fs.create(
-                        new Path(jobStatPath, PERFORMANCE_COUNTER_FILE_NAME)))) {
-                    for (T2<String, Long> evt : perfCntr.evts()) {
-                        out.print(evt.get1());
-                        out.print(':');
-                        out.println(evt.get2().toString());
-                    }
+            fs.mkdirs(jobStatPath);
 
-                    out.flush();
+            try (PrintStream out = new PrintStream(fs.create(new Path(jobStatPath, PERFORMANCE_COUNTER_FILE_NAME)))) {
+                for (T2<String, Long> evt : perfCntr.evts()) {
+                    out.print(evt.get1());
+                    out.print(':');
+                    out.println(evt.get2().toString());
                 }
+
+                out.flush();
             }
         }
         catch (IOException e) {
