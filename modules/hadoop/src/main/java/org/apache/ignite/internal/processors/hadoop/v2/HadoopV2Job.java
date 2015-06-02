@@ -39,7 +39,6 @@ import java.util.Queue;
 import java.util.concurrent.*;
 
 import static org.apache.ignite.internal.processors.hadoop.HadoopUtils.*;
-import static org.apache.ignite.internal.processors.hadoop.v2.HadoopV2JobResourceManager.*;
 
 /**
  * Hadoop job implementation for v2 API.

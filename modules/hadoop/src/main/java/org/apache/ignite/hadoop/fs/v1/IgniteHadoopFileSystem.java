@@ -176,12 +176,9 @@ public class IgniteHadoopFileSystem extends FileSystem {
      * @return the user name, never null.
      */
     public static String getFsHadoopUser() throws IOException {
-        String user = null;
-
         UserGroupInformation currUgi = UserGroupInformation.getCurrentUser();
 
-        if (currUgi != null)
-            user = currUgi.getShortUserName();
+        String user = currUgi.getShortUserName();
 
         user = IgfsUtils.fixUserName(user);
 
@@ -355,11 +352,22 @@ public class IgniteHadoopFileSystem extends FileSystem {
     @Override public void close() throws IOException {
         if (closeGuard.compareAndSet(false, true)) {
             if (cacheEnabled) {
-                // TODO: get must take in count user name.
-                FileSystem cached = get(getUri(), getConf());
+                FileSystem cached;
+
+                try {
+                    cached = get(getUri(), getConf(), user);
+                }
+                catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+
+                    throw new IOException(ie);
+                }
 
                 if (cached == this)
                     return; // do not close cached instances.
+                else
+                    // For some reason we created another Fs.
+                    cached.close();
             }
 
             close0();

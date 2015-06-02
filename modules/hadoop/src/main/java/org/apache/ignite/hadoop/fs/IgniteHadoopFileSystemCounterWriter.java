@@ -25,7 +25,6 @@ import org.apache.ignite.*;
 import org.apache.ignite.internal.processors.hadoop.*;
 import org.apache.ignite.internal.processors.hadoop.counter.*;
 import org.apache.ignite.internal.processors.hadoop.counter.HadoopCounters;
-import org.apache.ignite.internal.processors.hadoop.v2.*;
 import org.apache.ignite.internal.processors.igfs.*;
 import org.apache.ignite.internal.util.typedef.*;
 
@@ -73,8 +72,8 @@ public class IgniteHadoopFileSystemCounterWriter implements HadoopCounterWriter 
         try {
             hadoopCfg.set(MRJobConfig.USER_NAME, user);
 
-            // TODO: Check if FileSystem can be closed here safely.
-            FileSystem fs = HadoopV2JobResourceManager.fileSystemForMrUser(jobStatPath.toUri(), hadoopCfg);
+            // TODO: Check if FileSystem should be closed, see https://issues.apache.org/jira/browse/IGNITE-980
+            FileSystem fs = HadoopUtils.fileSystemForMrUser(jobStatPath.toUri(), hadoopCfg);
 
             fs.mkdirs(jobStatPath);
 
