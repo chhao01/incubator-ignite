@@ -29,6 +29,23 @@
 
         <property name="metricsLogFrequency" value="5000"/>
 
+        <property name="pluginConfigurations">
+            <list>
+                <bean class="org.gridgain.grid.configuration.GridGainConfiguration">
+                    <!-- Portable objects configuration. -->
+                    <property name="portableConfiguration">
+                        <bean class="org.gridgain.grid.configuration.PortableConfiguration">
+                            <property name="classNames">
+                                <list>
+                                    <value>org.apache.ignite.yardstick.cache.model.*</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+
         <property name="cacheConfiguration">
             <list>
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -39,6 +56,14 @@
                     <property name="atomicityMode" value="ATOMIC"/>
 
                     <property name="swapEnabled" value="false"/>
+
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
 
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -51,6 +76,14 @@
                     <property name="swapEnabled" value="false"/>
 
                     <property name="memoryMode" value="OFFHEAP_TIERED"/>
+
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
 
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -64,6 +97,13 @@
 
                     <property name="memoryMode" value="OFFHEAP_VALUES"/>
 
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
 
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -75,6 +115,13 @@
 
                     <property name="swapEnabled" value="false"/>
 
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
 
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -88,6 +135,13 @@
 
                     <property name="memoryMode" value="OFFHEAP_TIERED"/>
 
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
 
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -101,6 +155,13 @@
 
                     <property name="memoryMode" value="OFFHEAP_VALUES"/>
 
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
 
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
@@ -112,13 +173,30 @@
 
                     <property name="swapEnabled" value="false"/>
 
-                    <property name="indexedTypes">
+                    <property name="typeMetadata">
                         <list>
-                            <value>java.lang.Integer</value>
-                            <value>org.apache.ignite.yardstick.cache.model.Organization</value>
+                            <bean class="org.apache.ignite.cache.CacheTypeMetadata">
+                                <property name="keyType" value="java.lang.Integer"/>
+                                <property name="valueType" value="org.apache.ignite.yardstick.cache.model.Organization"/>
+                            </bean>
+                            <bean class="org.apache.ignite.cache.CacheTypeMetadata">
+                                <property name="keyType" value="java.lang.Integer"/>
+                                <property name="valueType" value="org.apache.ignite.yardstick.cache.model.Person"/>
 
-                            <value>java.lang.Integer</value>
-                            <value>org.apache.ignite.yardstick.cache.model.Person</value>
+                                <property name="queryFields">
+                                    <map>
+                                        <entry key="salary" value="java.lang.Double"/>
+                                    </map>
+                                </property>
+                            </bean>
+                        </list>
+                    </property>
+
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
                         </list>
                     </property>
                 </bean>
@@ -134,13 +212,31 @@
 
                     <property name="memoryMode" value="OFFHEAP_TIERED"/>
 
-                    <property name="indexedTypes">
-                        <list>
-                            <value>java.lang.Integer</value>
-                            <value>org.apache.ignite.yardstick.cache.model.Organization</value>
 
-                            <value>java.lang.Integer</value>
-                            <value>org.apache.ignite.yardstick.cache.model.Person</value>
+                    <property name="typeMetadata">
+                        <list>
+                            <bean class="org.apache.ignite.cache.CacheTypeMetadata">
+                                <property name="keyType" value="java.lang.Integer"/>
+                                <property name="valueType" value="org.apache.ignite.yardstick.cache.model.Organization"/>
+                            </bean>
+                            <bean class="org.apache.ignite.cache.CacheTypeMetadata">
+                                <property name="keyType" value="java.lang.Integer"/>
+                                <property name="valueType" value="org.apache.ignite.yardstick.cache.model.Person"/>
+
+                                <property name="queryFields">
+                                    <map>
+                                        <entry key="salary" value="java.lang.Double"/>
+                                    </map>
+                                </property>
+                            </bean>
+                        </list>
+                    </property>
+
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
                         </list>
                     </property>
                 </bean>
@@ -153,6 +249,14 @@
                     <property name="atomicityMode" value="TRANSACTIONAL"/>
 
                     <property name="swapEnabled" value="false"/>
+
+                    <property name="pluginConfigurations">
+                        <list>
+                            <bean class="org.gridgain.grid.configuration.GridGainCacheConfiguration">
+                                <property name="portableEnabled" value="true"/>
+                            </bean>
+                        </list>
+                    </property>
                 </bean>
             </list>
         </property>
