@@ -24,7 +24,7 @@ import java.io.*;
 /**
  * Organization record used for query test.
  */
-public class Organization implements Externalizable {
+public class Organization {
     /** Organization ID. */
     @QuerySqlField(index = true)
     private int id;
@@ -77,18 +77,6 @@ public class Organization implements Externalizable {
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /** {@inheritDoc} */
-    @Override public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(id);
-        out.writeUTF(name);
-    }
-
-    /** {@inheritDoc} */
-    @Override public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        id = in.readInt();
-        name = in.readUTF();
     }
 
     /** {@inheritDoc} */

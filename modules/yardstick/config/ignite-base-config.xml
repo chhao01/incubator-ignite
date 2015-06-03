@@ -40,6 +40,8 @@
                                     <value>org.apache.ignite.yardstick.cache.model.*</value>
                                 </list>
                             </property>
+
+                            <property name="metaDataEnabled" value="false" />
                         </bean>
                     </property>
                 </bean>
