@@ -113,7 +113,7 @@ public class HadoopV2JobResourceManager {
 
                 if (download) {
                     // TODO: Check if FileSystem should be closed, see https://issues.apache.org/jira/browse/IGNITE-980
-                    FileSystem fs = HadoopUtils.fileSystemForMrUser(stagingDir.toUri(), cfg);
+                    FileSystem fs = HadoopUtils.fileSystemForMrUser(stagingDir.toUri(), cfg, true);
 
                     if (!fs.exists(stagingDir))
                         throw new IgniteCheckedException("Failed to find map-reduce submission " +
@@ -209,7 +209,7 @@ public class HadoopV2JobResourceManager {
             FileSystem dstFs = FileSystem.getLocal(cfg);
 
             // TODO: Check if FileSystem should be closed, see https://issues.apache.org/jira/browse/IGNITE-980
-            FileSystem srcFs = HadoopUtils.fileSystemForMrUser(srcPath.toUri(), cfg);
+            FileSystem srcFs = HadoopUtils.fileSystemForMrUser(srcPath.toUri(), cfg, true);
 
             if (extract) {
                 File archivesPath = new File(jobLocDir.getAbsolutePath(), ".cached-archives");
@@ -293,7 +293,7 @@ public class HadoopV2JobResourceManager {
         try {
             if (stagingDir != null)
                 // TODO: Check if FileSystem should be closed, see https://issues.apache.org/jira/browse/IGNITE-980
-                HadoopUtils.fileSystemForMrUser(stagingDir.toUri(), ctx.getJobConf()).delete(stagingDir, true);
+                HadoopUtils.fileSystemForMrUser(stagingDir.toUri(), ctx.getJobConf(), true).delete(stagingDir, true);
         }
         catch (Exception e) {
             log.error("Failed to remove job staging directory [path=" + stagingDir + ", jobId=" + jobId + ']' , e);

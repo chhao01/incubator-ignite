@@ -27,12 +27,14 @@ import org.apache.hadoop.mapreduce.JobStatus;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.ignite.*;
 import org.apache.ignite.hadoop.fs.v1.*;
+import org.apache.ignite.internal.processors.hadoop.fs.*;
 import org.apache.ignite.internal.processors.hadoop.v2.*;
 import org.apache.ignite.internal.util.typedef.*;
 import org.apache.ignite.internal.util.typedef.internal.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 
@@ -333,6 +335,24 @@ public class HadoopUtils {
     }
 
     /**
+     * Creates {@link JobConf} in a correct class loader context to avoid caching
+     * of inappropriate class loader in the Configuration object.
+     * @return New instance of {@link JobConf}.
+     */
+    public static JobConf safeCreateJobConf() {
+        final ClassLoader cl0 = Thread.currentThread().getContextClassLoader();
+
+        Thread.currentThread().setContextClassLoader(JobConf.class.getClassLoader());
+
+        try {
+            return new JobConf();
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(cl0);
+        }
+    }
+
+    /**
      * Gets non-null user name as per the Hadoop viewpoint.
      * @param cfg the Hadoop job configuration, may be null.
      * @return the user name, never null.
@@ -355,7 +375,9 @@ public class HadoopUtils {
      * @return the file system
      * @throws IOException
      */
-    public static FileSystem fileSystemForMrUser(@Nullable URI uri, Configuration cfg) throws IOException {
+    public static FileSystem fileSystemForMrUser(@Nullable URI uri, Configuration cfg, boolean doCacheFs) throws IOException {
+        X.println("######## fileSystemForMrUser: " + HadoopUtils.class.getClassLoader());
+
         final String usr = getMrHadoopUser(cfg);
 
         assert usr != null;
@@ -365,13 +387,23 @@ public class HadoopUtils {
 
         final FileSystem fs;
 
-        try {
-            fs = FileSystem.get(uri, cfg, usr);
+        if (doCacheFs) {
+            try {
+                fs = getWithCaching(uri, cfg, usr);
+            }
+            catch (IgniteException ie) {
+                throw new IOException(ie);
+            }
         }
-        catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
+        else {
+            try {
+                fs = FileSystem.get(uri, cfg, usr);
+            }
+            catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
 
-            throw new IOException(ie);
+                throw new IOException(ie);
+            }
         }
 
         assert fs != null;
@@ -379,4 +411,205 @@ public class HadoopUtils {
 
         return fs;
     }
+
+    /** Lazy per-user cache for the file systems. It is cleared and nulled in #close() method. */
+    private static final HadoopLazyConcurrentMap<FsCacheKey, FileSystem> fileSysLazyMap = new HadoopLazyConcurrentMap<>(
+        new HadoopLazyConcurrentMap.ValueFactory<FsCacheKey, FileSystem>() {
+            @Override public FileSystem createValue(FsCacheKey key) {
+                try {
+                    assert key != null;
+
+                    // Disable cache:
+                    URI uri = key.uri();
+                    String scheme = uri.getScheme();
+                    assert scheme != null;
+                    String property = HadoopUtils.disableFsCahcePropertyName(scheme);
+                    key.configuration().setBoolean(property, true);
+
+                    FileSystem fs = FileSystem.get(uri, key.configuration(), key.user());
+
+                    // DIAGNOSTIC: Make sure this Fs is not cached by Hadoop:
+                    try {
+                        Object cached = getCached(fs);
+
+                        assert cached == null;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    return fs;
+                }
+                catch (IOException | InterruptedException ioe) {
+                    throw new IgniteException(ioe);
+                }
+            }
+        }
+    );
+
+    /**
+     * Note that configuration is not actually a part of the key.
+     * It is used solely to initialize the first instance
+     * that is created for the key.
+     */
+    public static final class FsCacheKey {
+        /** */
+        private final URI uri;
+
+        /** */
+        private final String usr;
+
+        /** */
+        private final String equalityKey;
+
+        /** */
+        private final Configuration cfg;
+
+        /**
+         */
+        public FsCacheKey(URI uri, String usr, Configuration cfg) {
+            assert uri != null;
+            assert usr != null;
+            assert cfg != null;
+
+            this.uri = fixUri(uri, cfg);
+            this.usr = usr;
+            this.cfg = cfg;
+
+            this.equalityKey = createEqualityKey();
+        }
+
+        /**
+         */
+        private String createEqualityKey() {
+            String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+
+            String authority = uri.getAuthority() == null ? "" : uri.getAuthority().toLowerCase();
+
+            return "(" + usr + ")@" + scheme + "://" + authority;
+        }
+
+        /**
+         */
+        public URI uri() {
+            return uri;
+        }
+
+        /**
+         */
+        public String user() {
+            return usr;
+        }
+
+        /**
+         */
+        public Configuration configuration() {
+            return cfg;
+        }
+
+        /** {@inheritDoc} */
+        @Override public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+
+            if (obj == null || getClass() != obj.getClass())
+                return false;
+
+            return equalityKey.equals(((FsCacheKey)obj).equalityKey);
+        }
+
+        /** {@inheritDoc} */
+        @Override public int hashCode() {
+            return equalityKey.hashCode();
+        }
+
+        /** {@inheritDoc} */
+        @Override public String toString() {
+            return equalityKey;
+        }
+    }
+
+    public static FileSystem getWithCaching(URI uri, Configuration cfg, String usr) {
+        FsCacheKey key = new FsCacheKey(uri, usr, cfg);
+
+        X.println("#### Key = " + key);
+
+        FileSystem fs = fileSysLazyMap.getOrCreate(key);
+
+        return fs;
+    }
+
+    public static String disableFsCahcePropertyName(String scheme) {
+        return String.format("fs.%s.impl.disable.cache", scheme);
+    }
+
+    /**
+     * Takes Fs URI using logic similar to that used in FileSystem#get(1,2,3).
+     * @param uri0 The uri.
+     * @param cfg The cfg.
+     * @return Correct URI.
+     */
+    public static URI fixUri(URI uri0, Configuration cfg) {
+        if (uri0 == null)
+            return FileSystem.getDefaultUri(cfg);
+
+        String scheme = uri0.getScheme();
+        String authority = uri0.getAuthority();
+
+        if (authority == null) {
+            URI dfltUri = FileSystem.getDefaultUri(cfg);
+
+            if (scheme == null ||
+                (scheme.equals(dfltUri.getScheme())
+                    && dfltUri.getAuthority() != null))
+                return dfltUri;
+        }
+
+        return uri0;
+    }
+
+
+    /**
+     * DIAGNOSTIC.
+     * @return The cached instance in FileSystem cache taken by 'fs.key'.
+     */
+    static Object getCached(FileSystem fs) throws Exception {
+        assert fs != null;
+
+        Field keyField = FileSystem.class.getDeclaredField("key");
+
+        keyField.setAccessible(true);
+
+        Object key = keyField.get(fs);
+
+        Map map = getMap();
+
+        Object cachedFs = map.get(key);
+
+        return cachedFs;
+    }
+
+    /**
+     * DIAGNOSTIC.
+     * @return The FileSystem.CACHE.map .
+     */
+    private static Map getMap() throws Exception {
+        Field CACHEField = FileSystem.class.getDeclaredField("CACHE");
+
+        CACHEField.setAccessible(true);
+
+        Object cacheObj = CACHEField.get(null);
+
+        Field mapField = cacheObj.getClass().getDeclaredField("map");
+
+        mapField.setAccessible(true);
+
+        Map map = (Map)mapField.get(cacheObj);
+
+        return map;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(String.format("fs.%s.impl.disable.cache", null));
+    }
+
 }

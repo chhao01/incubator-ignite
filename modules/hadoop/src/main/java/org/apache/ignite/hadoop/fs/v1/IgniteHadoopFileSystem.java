@@ -144,7 +144,7 @@ public class IgniteHadoopFileSystem extends FileSystem {
     private int seqReadsBeforePrefetch;
 
     /** The cache was disabled when the instance was creating. */
-    private boolean cacheEnabled;
+    //private boolean cacheEnabled;
 
     /** {@inheritDoc} */
     @Override public URI getUri() {
@@ -213,9 +213,9 @@ public class IgniteHadoopFileSystem extends FileSystem {
 
             setConf(cfg);
 
-            String disableCacheName = String.format("fs.%s.impl.disable.cache", name.getScheme());
+            //String disableCacheName = String.format("fs.%s.impl.disable.cache", name.getScheme());
 
-            cacheEnabled = !cfg.getBoolean(disableCacheName, false);
+            //cacheEnabled = !cfg.getBoolean(disableCacheName, false);
 
             mgmt = cfg.getBoolean(IGFS_MANAGEMENT, false);
 
@@ -350,28 +350,8 @@ public class IgniteHadoopFileSystem extends FileSystem {
 
     /** {@inheritDoc} */
     @Override public void close() throws IOException {
-        if (closeGuard.compareAndSet(false, true)) {
-            if (cacheEnabled) {
-                FileSystem cached;
-
-                try {
-                    cached = get(getUri(), getConf(), user);
-                }
-                catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-
-                    throw new IOException(ie);
-                }
-
-                if (cached == this)
-                    return; // do not close cached instances.
-                else
-                    // For some reason we created another Fs.
-                    cached.close();
-            }
-
+        if (closeGuard.compareAndSet(false, true))
             close0();
-        }
     }
 
     /**

@@ -786,7 +786,7 @@ public abstract class IgfsAbstractSelfTest extends IgfsCommonAbstractTest {
      * @throws Exception If failed.
      */
     @SuppressWarnings("ConstantConditions")
-    public void testFormat() throws Exception {
+    public void _testFormat() throws Exception {
         // Test works too long and fails.
         fail("https://issues.apache.org/jira/browse/IGNITE-586");
         
