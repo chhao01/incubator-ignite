@@ -143,9 +143,6 @@ public class IgniteHadoopFileSystem extends FileSystem {
     /** Custom-provided sequential reads before prefetch. */
     private int seqReadsBeforePrefetch;
 
-    /** The cache was disabled when the instance was creating. */
-    //private boolean cacheEnabled;
-
     /** {@inheritDoc} */
     @Override public URI getUri() {
         if (uri == null)
@@ -212,10 +209,6 @@ public class IgniteHadoopFileSystem extends FileSystem {
             super.initialize(name, cfg);
 
             setConf(cfg);
-
-            //String disableCacheName = String.format("fs.%s.impl.disable.cache", name.getScheme());
-
-            //cacheEnabled = !cfg.getBoolean(disableCacheName, false);
 
             mgmt = cfg.getBoolean(IGFS_MANAGEMENT, false);
 
@@ -345,7 +338,7 @@ public class IgniteHadoopFileSystem extends FileSystem {
     @Override protected void finalize() throws Throwable {
         super.finalize();
 
-        close0();
+        close();
     }
 
     /** {@inheritDoc} */
