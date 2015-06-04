@@ -84,6 +84,7 @@ public class HadoopV2JobResourceManager {
         try {
             cfg.set(HadoopFileSystemsUtils.LOC_FS_WORK_DIR_PROP, dir.getAbsolutePath());
 
+            // TODO: Make constant.
             String prop = HadoopUtils.disableFsCachePropertyName("file");
 
             if (!cfg.getBoolean(prop, false))

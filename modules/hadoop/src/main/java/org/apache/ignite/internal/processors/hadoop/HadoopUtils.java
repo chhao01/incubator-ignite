@@ -29,6 +29,7 @@ import org.apache.ignite.*;
 import org.apache.ignite.hadoop.fs.v1.*;
 import org.apache.ignite.internal.processors.hadoop.fs.*;
 import org.apache.ignite.internal.processors.hadoop.v2.*;
+import org.apache.ignite.internal.util.*;
 import org.apache.ignite.internal.util.typedef.*;
 import org.apache.ignite.internal.util.typedef.internal.*;
 import org.jetbrains.annotations.*;
@@ -77,6 +78,7 @@ public class HadoopUtils {
 
                     String prop = HadoopUtils.disableFsCachePropertyName(scheme);
 
+                    // TODO: Copy configuration instead of altering existing one.
                     key.configuration().setBoolean(prop, true);
 
                     return FileSystem.get(uri, key.configuration(), key.user());
@@ -472,11 +474,17 @@ public class HadoopUtils {
          * Creates String key used for equality and hashing.
          */
         private String createEqualityKey() {
-            String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+            GridStringBuilder sb = new GridStringBuilder("(").a(usr).a(")@");
 
-            String authority = uri.getAuthority() == null ? "" : uri.getAuthority().toLowerCase();
+            if (uri.getScheme() != null)
+                sb.a(uri.getScheme().toLowerCase());
 
-            return "(" + usr + ")@" + scheme + "://" + authority;
+            sb.a("://");
+
+            if (uri.getAuthority() != null)
+                sb.a(uri.getAuthority().toLowerCase());
+
+            return sb.toString();
         }
 
         /**
@@ -568,9 +576,7 @@ public class HadoopUtils {
         if (authority == null) {
             URI dfltUri = FileSystem.getDefaultUri(cfg);
 
-            if (scheme == null ||
-                (scheme.equals(dfltUri.getScheme())
-                    && dfltUri.getAuthority() != null))
+            if (scheme == null || (scheme.equals(dfltUri.getScheme()) && dfltUri.getAuthority() != null))
                 return dfltUri;
         }
 
