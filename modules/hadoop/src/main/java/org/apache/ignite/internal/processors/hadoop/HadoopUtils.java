@@ -64,7 +64,6 @@ public class HadoopUtils {
     private static final String OLD_REDUCE_CLASS_ATTR = "mapred.reducer.class";
 
     /** Lazy per-user cache for the file systems. It is cleared and nulled in #close() method. */
-    // TODO: cleam up this cache upon Ignite node stop, see https://issues.apache.org/jira/browse/IGNITE-980 .
     private static final HadoopLazyConcurrentMap<FsCacheKey, FileSystem> fileSysLazyMap = new HadoopLazyConcurrentMap<>(
         new HadoopLazyConcurrentMap.ValueFactory<FsCacheKey, FileSystem>() {
             @Override public FileSystem createValue(FsCacheKey key) {
@@ -76,12 +75,14 @@ public class HadoopUtils {
 
                     String scheme = uri.getScheme();
 
+                    // Copy the configuration to avoid altering the external object.
+                    Configuration cfg = new Configuration(key.configuration());
+
                     String prop = HadoopUtils.disableFsCachePropertyName(scheme);
 
-                    // TODO: Copy configuration instead of altering existing one.
-                    key.configuration().setBoolean(prop, true);
+                    cfg.setBoolean(prop, true);
 
-                    return FileSystem.get(uri, key.configuration(), key.user());
+                    return FileSystem.get(uri, cfg, key.user());
                 }
                 catch (IOException | InterruptedException ioe) {
                     throw new IgniteException(ioe);
@@ -166,8 +167,6 @@ public class HadoopUtils {
                 break;
 
             case PHASE_REDUCE:
-                // TODO: temporary fixed, but why PHASE_REDUCE could have 0 reducers?
-                // See https://issues.apache.org/jira/browse/IGNITE-764
                 setupProgress = 1;
                 mapProgress = 1;
 

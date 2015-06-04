@@ -72,7 +72,6 @@ public class IgniteHadoopFileSystemCounterWriter implements HadoopCounterWriter 
         try {
             hadoopCfg.set(MRJobConfig.USER_NAME, user);
 
-            // TODO: Check if FileSystem should be closed, see https://issues.apache.org/jira/browse/IGNITE-980
             FileSystem fs = HadoopUtils.fileSystemForMrUser(jobStatPath.toUri(), hadoopCfg, true);
 
             fs.mkdirs(jobStatPath);

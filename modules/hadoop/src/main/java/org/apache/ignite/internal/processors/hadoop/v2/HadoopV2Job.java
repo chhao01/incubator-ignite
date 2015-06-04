@@ -134,7 +134,6 @@ public class HadoopV2Job implements HadoopJob {
             Path jobDir = new Path(jobDirPath);
 
             try {
-                // TODO: Check if FileSystem should be closed, see https://issues.apache.org/jira/browse/IGNITE-980
                 FileSystem fs = fileSystemForMrUser(jobDir.toUri(), jobConf, true);
 
                 JobSplit.TaskSplitMetaInfo[] metaInfos = SplitMetaInfoReader.readSplitMetaInfo(hadoopJobID, fs, jobConf,
@@ -322,8 +321,7 @@ public class HadoopV2Job implements HadoopJob {
 
     /** {@inheritDoc} */
     @Override public void cleanupStagingDirectory() {
-        if (rsrcMgr != null)
-            rsrcMgr.cleanupStagingDirectory();
+        rsrcMgr.cleanupStagingDirectory();
     }
 
     /**
