@@ -130,13 +130,6 @@ public class IgniteCacheTestSuite2 extends TestSuite {
 
         suite.addTest(new TestSuite(GridCacheOffheapUpdateSelfTest.class));
 
-        // TODO: GG-7242, GG-7243 already fixed. If next tests passed, when comment should be deleted.
-        suite.addTest(new TestSuite(GridCacheDhtRemoveFailureTest.class));
-        // TODO: GG-7242, GG-7243 already fixed. If next tests passed, when comment should be deleted.
-        suite.addTest(new TestSuite(GridCacheNearRemoveFailureTest.class));
-        // TODO: GG-7201 already fixed. If next tests passed, when comment should be deleted.
-        suite.addTest(new TestSuite(GridCacheDhtAtomicRemoveFailureTest.class));
-
         suite.addTest(new TestSuite(GridCacheNearPrimarySyncSelfTest.class));
         suite.addTest(new TestSuite(GridCacheColocatedPrimarySyncSelfTest.class));
 

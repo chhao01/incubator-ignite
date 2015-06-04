@@ -31,7 +31,7 @@ import static org.apache.ignite.transactions.TransactionConcurrency.*;
 public class GridCachePartitionedNodeRestartTest extends GridCacheAbstractNodeRestartSelfTest {
     /** {@inheritDoc} */
     @Override protected void beforeTest() throws Exception {
-        fail("https://issues.apache.org/jira/browse/IGNITE-874");
+        fail("https://issues.apache.org/jira/browse/IGNITE-882");
     }
 
     /** {@inheritDoc} */
