@@ -76,6 +76,9 @@ public abstract class GridNearCacheAdapter<K, V> extends GridDistributedCacheAda
             ) {
                 // Can't hold any locks here - this method is invoked when
                 // holding write-lock on the whole cache map.
+                if (ctx.useOffheapEntry())
+                    return new GridNearOffHeapCacheEntry(ctx, key, hash, val, next, hdrId);
+
                 return new GridNearCacheEntry(ctx, key, hash, val, next, hdrId);
             }
         });
@@ -92,7 +95,7 @@ public abstract class GridNearCacheAdapter<K, V> extends GridDistributedCacheAda
     }
 
     /** {@inheritDoc} */
-    @Override public GridCachePreloader<K, V> preloader() {
+    @Override public GridCachePreloader preloader() {
         return dht().preloader();
     }
 

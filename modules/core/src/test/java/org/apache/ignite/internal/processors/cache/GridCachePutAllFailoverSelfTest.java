@@ -622,6 +622,7 @@ public class GridCachePutAllFailoverSelfTest extends GridCommonAbstractTest {
 
         discoverySpi.setAckTimeout(60000);
         discoverySpi.setIpFinder(ipFinder);
+        discoverySpi.setForceServerMode(true);
 
         cfg.setDiscoverySpi(discoverySpi);
 

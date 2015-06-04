@@ -149,9 +149,8 @@ public class GridCacheIoManager extends GridCacheSharedManagerAdapter {
             c = clsHandlers.get(new ListenerKey(cacheMsg.cacheId(), cacheMsg.getClass()));
 
         if (c == null) {
-            if (log.isDebugEnabled())
-                log.debug("Received message without registered handler (will ignore) [msg=" + cacheMsg +
-                    ", nodeId=" + nodeId + ']');
+            U.warn(log, "Received message without registered handler (will ignore) [msg=" + cacheMsg +
+                ", nodeId=" + nodeId + ']');
 
             return;
         }
@@ -473,7 +472,8 @@ public class GridCacheIoManager extends GridCacheSharedManagerAdapter {
                     req.miniId(),
                     false,
                     0,
-                    req.classError());
+                    req.classError(),
+                    null);
 
                 sendResponseOnFailedMessage(nodeId, res, cctx, ctx.ioPolicy());
             }
@@ -488,7 +488,11 @@ public class GridCacheIoManager extends GridCacheSharedManagerAdapter {
                     req.futureId(),
                     req.miniId(),
                     req.version(),
-                    null, null, null);
+                    req.version(),
+                    null,
+                    null,
+                    null,
+                    null);
 
                 res.error(req.classError());
 

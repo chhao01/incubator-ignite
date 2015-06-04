@@ -20,6 +20,7 @@ package org.apache.ignite.testsuites;
 import junit.framework.*;
 import org.apache.ignite.*;
 import org.apache.ignite.cache.*;
+import org.apache.ignite.cache.affinity.*;
 import org.apache.ignite.cache.affinity.fair.*;
 import org.apache.ignite.cache.store.*;
 import org.apache.ignite.cache.store.jdbc.*;
@@ -87,6 +88,7 @@ public class IgniteCacheTestSuite extends TestSuite {
         suite.addTestSuite(IgniteFairAffinityDynamicCacheSelfTest.class);
         suite.addTestSuite(GridCacheAffinityBackupsSelfTest.class);
         suite.addTestSuite(IgniteCacheAffinitySelfTest.class);
+        suite.addTestSuite(IgniteClientNodeAffinityTest.class);
 
         // Swap tests.
         suite.addTestSuite(GridCacheSwapPreloadSelfTest.class);
@@ -148,12 +150,16 @@ public class IgniteCacheTestSuite extends TestSuite {
         suite.addTestSuite(GridCacheTxPartitionedLocalStoreSelfTest.class);
         suite.addTestSuite(IgniteCacheSystemTransactionsSelfTest.class);
 
+        suite.addTest(IgniteCacheTcpClientDiscoveryTestSuite.suite());
+
         // Heuristic exception handling.
         suite.addTestSuite(GridCacheColocatedTxExceptionSelfTest.class);
         suite.addTestSuite(GridCacheReplicatedTxExceptionSelfTest.class);
         suite.addTestSuite(GridCacheLocalTxExceptionSelfTest.class);
         suite.addTestSuite(GridCacheNearTxExceptionSelfTest.class);
-        suite.addTestSuite(GridCacheStopSelfTest.class);
+        suite.addTestSuite(GridCacheStopSelfTest.class); TODO IGNITE-257
+
+        suite.addTestSuite(IgniteCacheNearLockValueSelfTest.class);
 
         return suite;
     }

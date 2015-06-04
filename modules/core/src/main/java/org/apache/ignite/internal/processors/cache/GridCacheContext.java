@@ -348,7 +348,7 @@ public class GridCacheContext<K, V> implements Externalizable {
     public void awaitStarted() throws IgniteCheckedException {
         U.await(startLatch);
 
-        GridCachePreloader<K, V> prldr = preloader();
+        GridCachePreloader prldr = preloader();
 
         if (prldr != null)
             prldr.startFuture().get();
@@ -361,7 +361,7 @@ public class GridCacheContext<K, V> implements Externalizable {
         if (startLatch.getCount() != 0)
             return false;
 
-        GridCachePreloader<K, V> prldr = preloader();
+        GridCachePreloader prldr = preloader();
 
         return prldr == null || prldr.startFuture().isDone();
     }
@@ -682,7 +682,7 @@ public class GridCacheContext<K, V> implements Externalizable {
     /**
      * @return Preloader.
      */
-    public GridCachePreloader<K, V> preloader() {
+    public GridCachePreloader preloader() {
         return cache().preloader();
     }
 
@@ -1469,9 +1469,6 @@ public class GridCacheContext<K, V> implements Externalizable {
             Collection<ClusterNode> dhtNodeIds = new ArrayList<>(dhtRemoteNodes);
             Collection<ClusterNode> nearNodeIds = F.isEmpty(nearRemoteNodes) ? null : new ArrayList<>(nearRemoteNodes);
 
-            if (!F.isEmpty(nearNodeIds))
-                U.dumpStack("Added near mapped nodes: " + entry + ", " + nearNodeIds);
-
             entry.mappings(explicitLockVer, dhtNodeIds, nearNodeIds);
         }
 
@@ -1652,6 +1649,13 @@ public class GridCacheContext<K, V> implements Externalizable {
      */
     public boolean offheapTiered() {
         return cacheCfg.getMemoryMode() == OFFHEAP_TIERED && isOffHeapEnabled();
+    }
+
+    /**
+     * @return {@code True} if should use entry with offheap value pointer.
+     */
+    public boolean useOffheapEntry() {
+        return cacheCfg.getMemoryMode() == OFFHEAP_TIERED || cacheCfg.getMemoryMode() == OFFHEAP_VALUES;
     }
 
     /**

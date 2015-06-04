@@ -108,10 +108,13 @@ public abstract class IgniteUtils {
     private static final int[] GRID_EVTS;
 
     /** Empty integers array. */
-    private static final int[] EMPTY_INTS = new int[0];
+    public static final int[] EMPTY_INTS = new int[0];
 
     /** Empty  longs. */
-    private static final long[] EMPTY_LONGS = new long[0];
+    public static final long[] EMPTY_LONGS = new long[0];
+
+    /** Empty  longs. */
+    public static final Field[] EMPTY_FIELDS = new Field[0];
 
     /** System line separator. */
     private static final String NL = System.getProperty("line.separator");
@@ -1529,8 +1532,10 @@ public abstract class IgniteUtils {
             return Collections.emptyList();
 
         if (addrs.size() == 1) {
-            if (reachable(addrs.get(1), reachTimeout))
-                return Collections.singletonList(addrs.get(1));
+            InetAddress addr = addrs.get(0);
+
+            if (reachable(addr, reachTimeout))
+                return Collections.singletonList(addr);
 
             return Collections.emptyList();
         }
